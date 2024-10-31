@@ -1,0 +1,78 @@
+import os
+import cv2
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_iris
+
+# --- Phần 1: Chuẩn bị dữ liệu ---
+
+# 1.1 Tải dữ liệu IRIS
+iris_data = load_iris()
+X_iris, y_iris = iris_data.data, iris_data.target
+
+# 1.2 Tải và xử lý dữ liệu ảnh nha khoa
+def load_dental_images(directory):
+    images = "D:\XLA-TGMT\Bai 3\image_paths"
+    labels = "D:\XLA-TGMT\Bai 3\labels.csv"
+    for label in os.listdir(directory):
+        label_path = os.path.join(directory, label)
+        if os.path.isdir(label_path):  # Kiểm tra nếu đây là thư mục con
+            for img_file in os.listdir(label_path):
+                img_path = os.path.join(label_path, img_file)
+                image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)  # Đọc ảnh ở chế độ grayscale
+                if image is not None:
+                    image = cv2.resize(image, (64, 64))  # Resize ảnh về kích thước 64x64
+                    images.append(image.flatten())  # Làm phẳng ảnh thành một vector
+                    labels.append(int(label))  # Lấy nhãn từ tên thư mục
+    return np.array(images), np.array(labels)
+
+# Đường dẫn tới thư mục ảnh nha khoa
+dental_data_dir = "d:\XLA-TGMT\Bai 3\image_paths"  # Thay bằng đường dẫn thực tế của bạn
+X_dental, y_dental = load_dental_images(dental_data_dir)
+
+# --- Phần 2: Phân chia tập huấn luyện và tập kiểm tra ---
+
+# 2.1 Phân chia dữ liệu IRIS
+X_train_iris, X_test_iris, y_train_iris, y_test_iris = train_test_split(
+    X_iris, y_iris, test_size=0.3, random_state=42)
+
+# 2.2 Phân chia dữ liệu ảnh nha khoa
+X_train_dental, X_test_dental, y_train_dental, y_test_dental = train_test_split(
+    X_dental, y_dental, test_size=0.3, random_state=42)
+
+# --- Phần 3: Huấn luyện và đánh giá mô hình ---
+
+# 3.1 CART và ID3 trên bộ dữ liệu IRIS
+# CART với Gini Index
+cart_clf_iris = DecisionTreeClassifier(criterion="gini")
+cart_clf_iris.fit(X_train_iris, y_train_iris)
+y_pred_cart_iris = cart_clf_iris.predict(X_test_iris)
+accuracy_cart_iris = accuracy_score(y_test_iris, y_pred_cart_iris)
+
+# ID3 với Entropy (Information Gain)
+id3_clf_iris = DecisionTreeClassifier(criterion="entropy")
+id3_clf_iris.fit(X_train_iris, y_train_iris)
+y_pred_id3_iris = id3_clf_iris.predict(X_test_iris)
+accuracy_id3_iris = accuracy_score(y_test_iris, y_pred_id3_iris)
+
+# 3.2 CART và ID3 trên bộ dữ liệu ảnh nha khoa
+# CART với Gini Index
+cart_clf_dental = DecisionTreeClassifier(criterion="gini")
+cart_clf_dental.fit(X_train_dental, y_train_dental)
+y_pred_cart_dental = cart_clf_dental.predict(X_test_dental)
+accuracy_cart_dental = accuracy_score(y_test_dental, y_pred_cart_dental)
+
+# ID3 với Entropy (Information Gain)
+id3_clf_dental = DecisionTreeClassifier(criterion="entropy")
+id3_clf_dental.fit(X_train_dental, y_train_dental)
+y_pred_id3_dental = id3_clf_dental.predict(X_test_dental)
+accuracy_id3_dental = accuracy_score(y_test_dental, y_pred_id3_dental)
+
+# --- Phần 4: In kết quả ---
+print("Accuracy of CART (Gini) on IRIS:", accuracy_cart_iris)
+print("Accuracy of ID3 (Entropy) on IRIS:", accuracy_id3_iris)
+print("Accuracy of CART (Gini) on Dental Images:", accuracy_cart_dental)
+print("Accuracy of ID3 (Entropy) on Dental Images:", accuracy_id3_dental)
