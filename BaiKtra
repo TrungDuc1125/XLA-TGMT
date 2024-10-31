@@ -15,8 +15,8 @@ X_iris, y_iris = iris_data.data, iris_data.target
 
 # 1.2 Tải và xử lý dữ liệu ảnh nha khoa
 def load_dental_images(directory):
-    images = "D:\XLA-TGMT\Bai 3\image_paths"
-    labels = "D:\XLA-TGMT\Bai 3\labels.csv"
+    images = []
+    labels = []
     for label in os.listdir(directory):
         label_path = os.path.join(directory, label)
         if os.path.isdir(label_path):  # Kiểm tra nếu đây là thư mục con
